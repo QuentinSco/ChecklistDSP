@@ -20,7 +20,7 @@ const colorFor = (cat) =>
   cat === 'LIFR' ? 'red'    : 'grey';
 
 export default function FlightApp() {
-  const { flights, selectedId, addFlight, selectFlight } = useFlightStore();
+  const { flights, selectedId, addFlight, selectFlight, removeFlight } = useFlightStore();
   const [wx, setWx] = useState(null); // { depMetar, arrMetar, depTaf, arrTaf }
   const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
 
@@ -167,26 +167,48 @@ export default function FlightApp() {
         </form>
 
         <div style={{ overflowY: 'auto', maxHeight: '70vh' }}>
-          {flights.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => selectFlight(f.id)}
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                marginBottom: '4px',
-                padding: '6px',
-                background: f.id === selectedId ? '#1d4ed8' : '#111827',
-                border: '1px solid #374151',
-                color: 'white',
-                cursor: 'pointer',
-              }}
-            >
-              {f.num} – {f.dep}{f.arr ? ` – ${f.arr}` : ''} – {aeroDate(f.date)}
-            </button>
-          ))}
+        {flights.map((f) => (
+  <div
+    key={f.id}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      marginBottom: '4px',
+    }}
+  >
+    <button
+      type="button"
+      onClick={() => selectFlight(f.id)}
+      style={{
+        flex: 1,
+        textAlign: 'left',
+        padding: '6px',
+        background: f.id === selectedId ? '#1d4ed8' : '#111827',
+        border: '1px solid #374151',
+        color: 'white',
+        cursor: 'pointer',
+      }}
+    >
+      {f.num} – {f.dep}{f.arr ? ` – ${f.arr}` : ''} – {aeroDate(f.date)}
+    </button>
+    <button
+      type="button"
+      onClick={() => removeFlight(f.id)}
+      style={{
+        marginLeft: '4px',
+        padding: '0 6px',
+        background: '#7f1d1d',
+        border: '1px solid #b91c1c',
+        color: 'white',
+        cursor: 'pointer',
+      }}
+      aria-label="Supprimer ce vol"
+    >
+      ×
+    </button>
+  </div>
+))}
+
         </div>
       </aside>
 

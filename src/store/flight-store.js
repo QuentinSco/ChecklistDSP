@@ -13,20 +13,25 @@ export const useFlightStore = create((set, get) => ({
         {
           ...flight,
           id: Date.now(),
-          arr: flight.arr || '',          // destination
-          alternates: [],                 // array d’ICAO
         },
       ],
     });
   },
 
-  updateFlight: (id, patch) => {
+  updateFlight: (id, patch) =>
     set({
       flights: get().flights.map((f) =>
         f.id === id ? { ...f, ...patch } : f
       ),
-    });
-  },
+    }),
 
   selectFlight: (id) => set({ selectedId: id }),
+
+  removeFlight: (id) =>
+    set((state) => {
+      const remaining = state.flights.filter((f) => f.id !== id);
+      const newSelected =
+        state.selectedId === id ? (remaining[0]?.id ?? null) : state.selectedId;
+      return { flights: remaining, selectedId: newSelected };
+    }),
 }));
