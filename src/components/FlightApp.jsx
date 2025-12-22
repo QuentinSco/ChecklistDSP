@@ -269,7 +269,7 @@ export default function FlightApp() {
 
               {/* Arrivée */}
               {selectedFlight.arr && (
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1,maxWidth: '48%' }}>
                   <strong>Arrivée {selectedFlight.arr}</strong>
                   <div
                     style={{
