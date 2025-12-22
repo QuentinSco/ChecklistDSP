@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFlightStore } from '../store/flight-store.js';
+import ChecklistBeforeRelease from '../components/ChecklistBeforeRelease.jsx';
+
 
 const aeroDate = (iso) => {
   if (!iso) return '';
@@ -309,7 +311,11 @@ export default function FlightApp() {
 </pre>
                 </div>
               )}
+
             </div>
+            
+<ChecklistBeforeRelease flight={selectedFlight} />
+
           </div>
         )}
       </main>

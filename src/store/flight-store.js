@@ -13,10 +13,24 @@ export const useFlightStore = create((set, get) => ({
         {
           ...flight,
           id: Date.now(),
+          checklist: {
+            beforeRelease: {
+              qfu: false,
+              melCdl: false,
+              limitations: false,
+              fuel: false,
+              brief: false,
+              threats: false,
+              ifpuAckAtc: false,
+              release: false,
+            },
+            // plus tard : afterRelease, cruise, beforeArrival...
+          },
         },
       ],
     });
   },
+  
 
   updateFlight: (id, patch) =>
     set({
