@@ -215,7 +215,7 @@ export default function FlightApp() {
       </aside>
 
       {/* Zone principale */}
-      <main style={{ flex: 1,maxWidth: '48%', padding: '24px', boxSizing: 'border-box' }}>
+      <main style={{ flex: 1, padding: '24px', boxSizing: 'border-box' }}>
         {!selectedFlight && <p>Sélectionnez un vol dans la liste à gauche.</p>}
 
         {selectedFlight && (
@@ -232,7 +232,7 @@ export default function FlightApp() {
             {/* Météo départ / arrivée */}
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
               {/* Départ */}
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1 ,maxWidth: '48%'}}>
                 <strong>Départ {selectedFlight.dep}</strong>
                 <div
                   style={{
