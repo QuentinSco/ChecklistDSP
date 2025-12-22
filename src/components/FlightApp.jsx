@@ -1,23 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useFlightStore } from '../store/flight-store.js';
 
+const aeroDate = (iso) => {
+  if (!iso) return '';
+  const [year, month, day] = iso.split('-').map(Number);
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const yy = String(year).slice(-2);
+  const mmm = months[month - 1] || '???';
+  const dd = String(day).padStart(2, '0');
+  return `${dd}${mmm}${yy}`;
+};
+
+const catFrom = (metar) => metar?.fltCat || 'UNK';
+
+const colorFor = (cat) =>
+  cat === 'VFR'  ? 'green'  :
+  cat === 'MVFR' ? 'blue'   :
+  cat === 'IFR'  ? 'orange' :
+  cat === 'LIFR' ? 'red'    : 'grey';
+
 export default function FlightApp() {
   const { flights, selectedId, addFlight, selectFlight } = useFlightStore();
-  const [metar, setMetar] = useState(null);
-  const [taf, setTaf] = useState(null);
+  const [wx, setWx] = useState(null); // { depMetar, arrMetar, depTaf, arrTaf }
   const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-
 
   const selectedFlight = flights.find((f) => f.id === selectedId) || null;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-  
-    const num = form.get('flight').toString().toUpperCase();
-    const dep = form.get('dep').toString().toUpperCase();
+
+    const num  = form.get('flight').toString().toUpperCase();
+    const depInput = form.get('dep').toString().toUpperCase();
     const date = form.get('date').toString();
-  
+
+    let dep = depInput;
+    let arr = '';
+
     try {
       const res = await fetch('/api/flight-info', {
         method: 'POST',
@@ -25,63 +44,66 @@ export default function FlightApp() {
         body: JSON.stringify({ flight: num }),
       });
       const info = await res.json();
-  
-      const arr = info.destIcao || ''; // LSGG dans ton exemple
-  
-      addFlight({
-        num,
-        dep,
-        arr,
-        date,
-      });
+
+      // On remplace le départ saisi par celui de l’API si dispo
+      dep = info.originIcao || depInput;
+      arr = info.destIcao || '';
     } catch (e) {
-      // fallback : on ajoute sans destination si l’API route plante
-      addFlight({ num, dep, arr: '', date });
+      arr = '';
     }
-  
+
+    addFlight({ num, dep, arr, date });
     event.currentTarget.reset();
   };
-  
 
   useEffect(() => {
     const loadWx = async () => {
       if (!selectedFlight) {
-        setMetar(null);
-        setTaf(null);
+        setWx(null);
         return;
       }
 
       try {
-        const mRes = await fetch(`/api/metar/${selectedFlight.dep}`);
-        const mData = await mRes.json();
-        const metarObj = Array.isArray(mData) ? mData[0] : null;
+        const dep = selectedFlight.dep;
+        const arr = selectedFlight.arr;
 
-        const tRes = await fetch(`/api/taf/${selectedFlight.dep}`);
-        const tData = await tRes.json();
-        const tafObj = Array.isArray(tData) ? tData[0] : null;
+        // METAR départ
+        const mDepRes = await fetch(`/api/metar/${dep}`);
+        const mDepData = await mDepRes.json();
+        const depMetar = Array.isArray(mDepData) ? mDepData[0] : null;
 
-        setMetar(metarObj);
-        setTaf(tafObj);
+        // METAR arrivée
+        let arrMetar = null;
+        if (arr) {
+          const mArrRes = await fetch(`/api/metar/${arr}`);
+          const mArrData = await mArrRes.json();
+          arrMetar = Array.isArray(mArrData) ? mArrData[0] : null;
+        }
+
+        // TAF départ
+        const tDepRes = await fetch(`/api/taf/${dep}`);
+        const tDepData = await tDepRes.json();
+        const depTaf = Array.isArray(tDepData) ? tDepData[0] : null;
+
+        // TAF arrivée
+        let arrTaf = null;
+        if (arr) {
+          const tArrRes = await fetch(`/api/taf/${arr}`);
+          const tArrData = await tArrRes.json();
+          arrTaf = Array.isArray(tArrData) ? tArrData[0] : null;
+        }
+
+        setWx({ depMetar, arrMetar, depTaf, arrTaf });
       } catch (e) {
-        setMetar(null);
-        setTaf(null);
+        setWx(null);
       }
     };
 
     loadWx();
   }, [selectedFlight]);
 
-  const cat = metar?.fltCat || 'UNK';
-  const color =
-    cat === 'VFR'
-      ? 'green'
-      : cat === 'MVFR'
-      ? 'blue'
-      : cat === 'IFR'
-      ? 'orange'
-      : cat === 'LIFR'
-      ? 'red'
-      : 'grey';
+  const depCat = catFrom(wx?.depMetar);
+  const arrCat = catFrom(wx?.arrMetar);
 
   return (
     <div
@@ -162,7 +184,7 @@ export default function FlightApp() {
                 cursor: 'pointer',
               }}
             >
-              {f.num} – {f.dep} – {f.date}
+              {f.num} – {f.dep}{f.arr ? ` – ${f.arr}` : ''} – {aeroDate(f.date)}
             </button>
           ))}
         </div>
@@ -175,36 +197,88 @@ export default function FlightApp() {
         {selectedFlight && (
           <div>
             <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>
-              Vol {selectedFlight.num} – départ {selectedFlight.dep}
+              Vol {selectedFlight.num} – DEP {selectedFlight.dep}
+              {selectedFlight.arr && ` – DEST ${selectedFlight.arr}`}
             </h2>
-            <p style={{ marginBottom: '16px' }}>Date : {selectedFlight.date}</p>
 
-            {/* METAR + rond couleur */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginBottom: '16px',
-              }}
-            >
-              <div
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '999px',
-                  backgroundColor: color,
-                }}
-              ></div>
-              <div>Catégorie : {cat}</div>
+            <p style={{ marginBottom: '16px' }}>
+              Date : {aeroDate(selectedFlight.date)}
+            </p>
+
+            {/* Météo départ / arrivée */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+              {/* Départ */}
+              <div style={{ flex: 1 }}>
+                <strong>Départ {selectedFlight.dep}</strong>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    margin: '4px 0 8px',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: '999px',
+                      backgroundColor: colorFor(depCat),
+                    }}
+                  ></div>
+                  <span>Catégorie : {depCat}</span>
+                </div>
+                <pre
+                  style={{
+                    background: '#f3f4f6',
+                    padding: '8px',
+                    marginBottom: '4px',
+                  }}
+                >
+                  {wx?.depMetar ? wx.depMetar.rawOb : 'METAR indisponible'}
+                </pre>
+                <pre style={{ background: '#f9fafb', padding: '8px' }}>
+                  {wx?.depTaf ? wx.depTaf.rawOb : 'TAF indisponible'}
+                </pre>
+              </div>
+
+              {/* Arrivée */}
+              {selectedFlight.arr && (
+                <div style={{ flex: 1 }}>
+                  <strong>Arrivée {selectedFlight.arr}</strong>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      margin: '4px 0 8px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: '999px',
+                        backgroundColor: colorFor(arrCat),
+                      }}
+                    ></div>
+                    <span>Catégorie : {arrCat}</span>
+                  </div>
+                  <pre
+                    style={{
+                      background: '#f3f4f6',
+                      padding: '8px',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    {wx?.arrMetar ? wx.arrMetar.rawOb : 'METAR indisponible'}
+                  </pre>
+                  <pre style={{ background: '#f9fafb', padding: '8px' }}>
+                    {wx?.arrTaf ? wx.arrTaf.rawOb : 'TAF indisponible'}
+                  </pre>
+                </div>
+              )}
             </div>
-
-            <pre style={{ background: '#f3f4f6', padding: '12px' }}>
-  {metar ? metar.rawOb : 'METAR indisponible'}
-</pre>
-
-
-            {/* plus tard : affichage TAF */}
           </div>
         )}
       </main>

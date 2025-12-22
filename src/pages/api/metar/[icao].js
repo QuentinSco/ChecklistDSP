@@ -13,10 +13,7 @@ export async function GET({ params }) {
       },
     });
 
-    console.log('Upstream status:', resp.status);
-
     const text = await resp.text();
-    console.log('Upstream raw body:', text.slice(0, 300));
 
     if (!resp.ok) {
       return new Response(
