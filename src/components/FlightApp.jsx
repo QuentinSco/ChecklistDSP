@@ -10,16 +10,38 @@ export default function FlightApp() {
 
   const selectedFlight = flights.find((f) => f.id === selectedId) || null;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    addFlight({
-      num: form.get('flight').toString().toUpperCase(),
-      dep: form.get('dep').toString().toUpperCase(),
-      date: form.get('date').toString(),
-    });
+  
+    const num = form.get('flight').toString().toUpperCase();
+    const dep = form.get('dep').toString().toUpperCase();
+    const date = form.get('date').toString();
+  
+    try {
+      const res = await fetch('/api/flight-info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flight: num }),
+      });
+      const info = await res.json();
+  
+      const arr = info.destIcao || ''; // LSGG dans ton exemple
+  
+      addFlight({
+        num,
+        dep,
+        arr,
+        date,
+      });
+    } catch (e) {
+      // fallback : on ajoute sans destination si l’API route plante
+      addFlight({ num, dep, arr: '', date });
+    }
+  
     event.currentTarget.reset();
   };
+  
 
   useEffect(() => {
     const loadWx = async () => {
