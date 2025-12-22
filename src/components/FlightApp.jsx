@@ -261,8 +261,11 @@ export default function FlightApp() {
                 >
                   {wx?.depMetar ? wx.depMetar.rawOb : 'METAR indisponible'}
                 </pre>
-                <pre style={{ background: '#f9fafb', padding: '8px' }}>
+                <pre style={{ background: '#f9fafb', padding: '8px', 
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-all', }}>
   {wx?.depTaf ? tafText(wx.depTaf) : 'TAF indisponible'}
+  
 </pre>
 
               </div>
@@ -299,7 +302,9 @@ export default function FlightApp() {
                     {wx?.arrMetar ? wx.arrMetar.rawOb : 'METAR indisponible'}
                   </pre>
 
-                  <pre style={{ background: '#f9fafb', padding: '8px' }}>
+                  <pre style={{ background: '#f9fafb', padding: '8px',     marginBottom: '4px',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-all', }}>
   {wx?.arrTaf ? tafText(wx.arrTaf) : 'TAF indisponible'}
 </pre>
                 </div>
