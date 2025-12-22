@@ -17,6 +17,7 @@ export async function POST({ request }) {
     // GET https://aerodatabox.p.rapidapi.com/flights/number/AF1342/2025-12-22?...
     const path = `/flights/number/${encodeURIComponent(flight)}/${date}` +
                  `?withAircraftImage=false&withLocation=false&dateLocalRole=Both`;
+                 
 
     const url = `https://aerodatabox.p.rapidapi.com${path}`;
     console.log('AeroDataBox URL:', url);
@@ -24,7 +25,7 @@ export async function POST({ request }) {
     const resp = await fetch(url, {
       method: 'GET',
       headers: {
-        'x-rapidapi-key': '3279e3054fmshd47986c09113a18p18fea8jsn093497e1e558',
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
         'x-rapidapi-host': 'aerodatabox.p.rapidapi.com',
       },
     });
