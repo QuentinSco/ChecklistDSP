@@ -259,9 +259,16 @@ export default function FlightApp() {
                 >
                   {wx?.depMetar ? wx.depMetar.rawOb : 'METAR indisponible'}
                 </pre>
-                <pre style={{ background: '#f9fafb', padding: '8px' }}>
-                  {wx?.depTaf ? wx.depTaf.rawOb : 'TAF indisponible'}
-                </pre>
+                const tafText = (taf) = taf?.rawOb || taf?.raw_text || '';
+
+<pre style={{ background: '#f9fafb', padding: '8px' }}>
+  {wx?.depTaf ? tafText(wx.depTaf) : 'TAF indisponible'}
+</pre>
+
+<pre style={{ background: '#f9fafb', padding: '8px' }}>
+  {wx?.arrTaf ? tafText(wx.arrTaf) : 'TAF indisponible'}
+</pre>
+
               </div>
 
               {/* Arrivée */}

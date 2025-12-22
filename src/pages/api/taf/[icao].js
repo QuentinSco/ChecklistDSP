@@ -12,16 +12,14 @@ export async function GET({ params }) {
     });
 
     if (!resp.ok) {
-      return new Response(
-        JSON.stringify({ error: 'Upstream error', status: resp.status }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      const text = await resp.text();
+      return new Response(JSON.stringify({ error: 'Upstream error', status: resp.status, body: text }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    const data = await resp.json();
+    const data = await resp.json(); // tableau de TAFs
 
     return new Response(JSON.stringify(data), {
       status: 200,
