@@ -33,32 +33,38 @@ export default function FlightApp() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-
+  
     const num  = form.get('flight').toString().toUpperCase();
     const depInput = form.get('dep').toString().toUpperCase();
     const date = form.get('date').toString();
-
+  
     let dep = depInput;
     let arr = '';
-
+    let aircraftType = '';
+    let registration = '';
+    let times = null;
+  
     try {
       const res = await fetch('/api/flight-info', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ flight: num }),
+        body: JSON.stringify({ flight: num, date }),
       });
       const info = await res.json();
-
-      // On remplace le départ saisi par celui de l’API si dispo
+  
       dep = info.originIcao || depInput;
       arr = info.destIcao || '';
+      aircraftType = info.aircraftType || '';
+      registration = info.registration || '';
+      times = info.times || null;
     } catch (e) {
       arr = '';
     }
-
-    addFlight({ num, dep, arr, date });
+  
+    addFlight({ num, dep, arr, date, aircraftType, registration, times });
     event.currentTarget.reset();
   };
+  
 
   useEffect(() => {
     const loadWx = async () => {
@@ -230,6 +236,25 @@ export default function FlightApp() {
             <p style={{ marginBottom: '16px' }}>
               Date : {aeroDate(selectedFlight.date)}
             </p>
+
+  <div style={{ marginBottom: '16px', fontSize: '14px', color: '#4b5563' }}>
+    <div>
+      Départ sched : <strong>{formatTime(selectedFlight.times.depScheduled)}</strong> &nbsp;|&nbsp;
+      estimé : <strong>{formatTime(selectedFlight.times.depEstimated)}</strong>
+    </div>
+    <div>
+      Arrivée sched : <strong>{formatTime(selectedFlight.times.arrScheduled)}</strong> &nbsp;|&nbsp;
+      estimée : <strong>{formatTime(selectedFlight.times.arrEstimated)}</strong>
+    </div>
+    {selectedFlight.aircraftType && (
+      <div style={{ marginTop: '4px' }}>
+        Type avion : <strong>{selectedFlight.aircraftType}</strong>
+        {selectedFlight.registration && ` – Immat : ${selectedFlight.registration}`}
+      </div>
+    )}
+  </div>
+
+
 
             {/* Météo départ / arrivée */}
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
