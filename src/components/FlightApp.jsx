@@ -178,8 +178,9 @@ export default function FlightApp() {
             </div>
 
             <pre style={{ background: '#f3f4f6', padding: '12px' }}>
-              {metar ? metar.raw_text : 'METAR indisponible'}
-            </pre>
+  {metar ? metar.rawOb : 'METAR indisponible'}
+</pre>
+
 
             {/* plus tard : affichage TAF */}
           </div>
