@@ -12,6 +12,7 @@ const aeroDate = (iso) => {
 };
 
 const catFrom = (metar) => metar?.fltCat || 'UNK';
+const tafText = (taf) => taf?.rawOb || taf?.raw_text || '';
 
 const colorFor = (cat) =>
   cat === 'VFR'  ? 'green'  :
@@ -259,14 +260,8 @@ export default function FlightApp() {
                 >
                   {wx?.depMetar ? wx.depMetar.rawOb : 'METAR indisponible'}
                 </pre>
-                const tafText = (taf) = taf?.rawOb || taf?.raw_text || '';
-
-<pre style={{ background: '#f9fafb', padding: '8px' }}>
+                <pre style={{ background: '#f9fafb', padding: '8px' }}>
   {wx?.depTaf ? tafText(wx.depTaf) : 'TAF indisponible'}
-</pre>
-
-<pre style={{ background: '#f9fafb', padding: '8px' }}>
-  {wx?.arrTaf ? tafText(wx.arrTaf) : 'TAF indisponible'}
 </pre>
 
               </div>
@@ -302,9 +297,10 @@ export default function FlightApp() {
                   >
                     {wx?.arrMetar ? wx.arrMetar.rawOb : 'METAR indisponible'}
                   </pre>
+
                   <pre style={{ background: '#f9fafb', padding: '8px' }}>
-                    {wx?.arrTaf ? wx.arrTaf.rawOb : 'TAF indisponible'}
-                  </pre>
+  {wx?.arrTaf ? tafText(wx.arrTaf) : 'TAF indisponible'}
+</pre>
                 </div>
               )}
             </div>
