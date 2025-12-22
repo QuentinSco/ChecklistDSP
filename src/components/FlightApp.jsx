@@ -12,7 +12,8 @@ const aeroDate = (iso) => {
 };
 
 const catFrom = (metar) => metar?.fltCat || 'UNK';
-const tafText = (taf) => taf?.rawOb || taf?.raw_text || '';
+const tafText = (taf) => taf?.rawTAF || taf?.rawOb || taf?.raw_text || '';
+
 
 const colorFor = (cat) =>
   cat === 'VFR'  ? 'green'  :
