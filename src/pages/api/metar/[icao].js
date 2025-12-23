@@ -5,6 +5,8 @@ export async function GET({ params }) {
 
   try {
     const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=json`;
+    console.log('METAR URL:', url);
+
     const resp = await fetch(url, {
       headers: {
         'User-Agent': 'dsp-checklist-app/0.1 (contact: you@example.com)',
@@ -12,6 +14,7 @@ export async function GET({ params }) {
     });
 
     const text = await resp.text();
+    console.log('METAR raw response:', resp.status, text);
 
     if (!resp.ok) {
       return new Response(

@@ -22,7 +22,17 @@ const colorFor = (cat) =>
   cat === 'MVFR' ? 'blue'   :
   cat === 'IFR'  ? 'orange' :
   cat === 'LIFR' ? 'red'    : 'grey';
-
+  function formatTime(value) {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value; // au cas où ce soit déjà une string lisible
+    return d.toLocaleString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+    });
+  }
 export default function FlightApp() {
   const { flights, selectedId, addFlight, selectFlight, removeFlight } = useFlightStore();
   const [wx, setWx] = useState(null); // { depMetar, arrMetar, depTaf, arrTaf }
@@ -32,7 +42,8 @@ export default function FlightApp() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
   
     const num  = form.get('flight').toString().toUpperCase();
     const depInput = form.get('dep').toString().toUpperCase();
@@ -61,9 +72,14 @@ export default function FlightApp() {
       arr = '';
     }
   
+    // Une seule fois, en testant bien formElement
+    if (formElement && typeof formElement.reset === 'function') {
+      formElement.reset();
+    }
+  
     addFlight({ num, dep, arr, date, aircraftType, registration, times });
-    event.currentTarget.reset();
   };
+  
   
 
   useEffect(() => {
